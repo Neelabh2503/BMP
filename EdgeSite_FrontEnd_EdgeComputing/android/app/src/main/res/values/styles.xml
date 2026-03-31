@@ -1,0 +1,44 @@
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--&lt;!&ndash;<resources>&ndash;&gt;-->
+
+<!--&lt;!&ndash;    &lt;!&ndash; Launch screen theme &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">&ndash;&gt;-->
+<!--&lt;!&ndash;        <item name="android:windowBackground">@drawable/launch_background</item>&ndash;&gt;-->
+<!--&lt;!&ndash;    </style>&ndash;&gt;-->
+
+<!--&lt;!&ndash;    &lt;!&ndash; Normal Flutter theme &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">&ndash;&gt;-->
+<!--&lt;!&ndash;        <item name="android:windowBackground">?android:colorBackground</item>&ndash;&gt;-->
+<!--&lt;!&ndash;    </style>&ndash;&gt;-->
+
+<!--&lt;!&ndash;</resources>&ndash;&gt;-->
+
+<!--<resources>-->
+
+<!--    &lt;!&ndash; App Theme for Native Activity &ndash;&gt;-->
+<!--    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">-->
+<!--        <item name="android:statusBarColor">@android:color/black</item>-->
+<!--    </style>-->
+
+<!--</resources>-->
+
+
+
+<resources>
+
+    <!-- Flutter Launch Theme -->
+    <style name="LaunchTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+
+    <!-- Flutter Normal Theme -->
+    <style name="NormalTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+
+    <!-- Native YOLO Theme -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/black</item>
+    </style>
+
+</resources>
