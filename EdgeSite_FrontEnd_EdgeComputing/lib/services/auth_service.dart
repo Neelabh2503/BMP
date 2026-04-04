@@ -1,17 +1,20 @@
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService extends ChangeNotifier {
   static final AuthService _instance = AuthService._internal();
   factory AuthService() => _instance;
   AuthService._internal();
 
-  UserModel? _currentUser;
+  final SupabaseClient _supabase = Supabase.instance.client;
+
   bool _isLoading = false;
   String? _errorMessage;
 
-  UserModel? get currentUser => _currentUser;
+  // Listen to Supabase's current user
+  User? get currentUser => _supabase.auth.currentUser;
   bool get isLoading => _isLoading;
-  bool get isAuthenticated => _currentUser != null;
+  bool get isAuthenticated => _supabase.auth.currentSession != null;
   String? get errorMessage => _errorMessage;
 
   Future<bool> signIn(String email, String password) async {
@@ -19,25 +22,21 @@ class AuthService extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    //fOr now I have kept it like this. we will connect with real backend...
-    await Future.delayed(const Duration(milliseconds: 1500));
-
-    if (email.isNotEmpty && password.length >= 6) {
-      _currentUser = UserModel(
-        id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
+    try {
+      await _supabase.auth.signInWithPassword(
         email: email,
-        name: email.split('@').first,
-        role: 'Edge Analyst',
-        avatarInitials: email.substring(0, 2).toUpperCase(),
-        joinedAt: DateTime.now(),
+        password: password,
       );
       _isLoading = false;
       notifyListeners();
       return true;
-    } else {
-      _errorMessage = password.length < 6
-          ? 'Password must be at least 6 characters'
-          : 'Invalid credentials. Please try again.';
+    } on AuthException catch (e) {
+      _errorMessage = e.message;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = 'An unexpected error occurred';
       _isLoading = false;
       notifyListeners();
       return false;
@@ -49,56 +48,89 @@ class AuthService extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 1800));
-
-    if (name.isNotEmpty && email.contains('@') && password.length >= 6) {
-      _currentUser = UserModel(
-        id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
+    try {
+      await _supabase.auth.signUp(
         email: email,
-        name: name,
-        role: 'Edge Analyst',
-        avatarInitials: name
-            .substring(0, name.contains(' ') ? 2 : 1)
-            .toUpperCase(),
-        joinedAt: DateTime.now(),
+        password: password,
+        data: {
+          'display_name': name,
+          'role': 'Edge Analyst', // Porting over your role logic
+        },
+        // Tell Supabase to bounce back to the app after email confirmation
+        emailRedirectTo: 'io.supabase.edgesite://login-callback/',
       );
       _isLoading = false;
       notifyListeners();
       return true;
-    } else {
-      _errorMessage = 'Please fill all fields correctly.';
+    } on AuthException catch (e) {
+      _errorMessage = e.message;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = 'An unexpected error occurred';
       _isLoading = false;
       notifyListeners();
       return false;
     }
   }
 
-  void signOut() {
-    _currentUser = null;
-    _errorMessage = null;
+  Future<void> signOut() async {
+    await _supabase.auth.signOut();
     notifyListeners();
   }
+  Future<bool> resetPassword(String email) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
 
+    try {
+      await _supabase.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'io.supabase.edgesite://login-callback/', // Uses your deep link
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on AuthException catch (e) {
+      _errorMessage = e.message;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = 'An unexpected error occurred';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+  Future<bool> updatePassword(String newPassword) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      // This updates the currently logged-in user's password
+      await _supabase.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on AuthException catch (e) {
+      _errorMessage = e.message;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = 'An unexpected error occurred';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
   void clearError() {
     _errorMessage = null;
     notifyListeners();
   }
-}
-
-class UserModel {
-  final String id;
-  final String email;
-  final String name;
-  final String role;
-  final String avatarInitials;
-  final DateTime joinedAt;
-
-  const UserModel({
-    required this.id,
-    required this.email,
-    required this.name,
-    required this.role,
-    required this.avatarInitials,
-    required this.joinedAt,
-  });
 }

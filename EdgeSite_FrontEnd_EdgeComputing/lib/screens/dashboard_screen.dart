@@ -50,7 +50,8 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget build(BuildContext context) {
     final user = _authService.currentUser;
     final hour = DateTime.now().hour;
-
+    final displayName = user?.userMetadata?['display_name'] as String? ?? user?.email?.split('@').first ?? 'User';
+    final initials = displayName.isNotEmpty ? displayName.substring(0, displayName.contains(' ') ? 2 : 1).toUpperCase() : 'US';
     final greeting = hour < 12
         ? 'Good Morning'
         : hour < 18
@@ -78,7 +79,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           ),
                         ),
                         Text(
-                          user?.name ?? 'User',
+                          displayName,
                           style: const TextStyle(
                             color: AppTheme.textPrimary,
                             fontSize: 26,
@@ -88,7 +89,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ],
                     ),
                   ),
-                  _AvatarWidget(initials: user?.avatarInitials ?? 'US'),
+                  _AvatarWidget(initials: initials),
                 ],
               ),
             ),
