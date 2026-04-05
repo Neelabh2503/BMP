@@ -60,6 +60,16 @@ class _LiveDetectionScreenState extends State<LiveDetectionScreen>
     super.dispose();
   }
 
+  Future<void> _startESPDetection() async {
+    HapticFeedback.mediumImpact();
+
+    try {
+      await _channel.invokeMethod('startESPDetection');
+    } catch (e) {
+      print("ESP detection error: $e");
+    }
+  }
+
   Future<void> _toggleDetection() async {
     HapticFeedback.mediumImpact();
     if (_isDetecting) {
@@ -76,7 +86,6 @@ class _LiveDetectionScreenState extends State<LiveDetectionScreen>
         await _channel.invokeMethod('startDetection');
         setState(() => _detectionCount++);
       } catch (e) {
-        // Demo mode
         setState(() {
           _inferenceTime = '${(12 + (8 * _pulse.value)).toStringAsFixed(1)}ms';
         });
@@ -91,7 +100,6 @@ class _LiveDetectionScreenState extends State<LiveDetectionScreen>
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Row(
@@ -137,6 +145,12 @@ class _LiveDetectionScreenState extends State<LiveDetectionScreen>
                     gradientColors: _isDetecting
                         ? [AppTheme.accent, Color(0xFFCC1F80)]
                         : [AppTheme.primary, AppTheme.secondary],
+                  ),
+                  const SizedBox(height: 12),
+                  GlowingButton(
+                    label: 'Connect to ESP32 CAM',
+                    onPressed: _startESPDetection,
+                    gradientColors: [Colors.orange, Colors.deepOrange],
                   ),
                 ],
               ),

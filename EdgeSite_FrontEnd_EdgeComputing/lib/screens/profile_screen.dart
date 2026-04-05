@@ -36,8 +36,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
     _entrySlide = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
         .animate(
-      CurvedAnimation(parent: _entryController, curve: Curves.easeOutCubic),
-    );
+          CurvedAnimation(parent: _entryController, curve: Curves.easeOutCubic),
+        );
   }
 
   @override
@@ -82,7 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   transitionsBuilder: (_, animation, __, child) =>
                       FadeTransition(opacity: animation, child: child),
                 ),
-                    (route) => false,
+                (route) => false,
               );
             },
             child: const Text(
@@ -101,8 +101,15 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final user = _authService.currentUser;
-    final displayName = user?.userMetadata?['display_name'] as String? ?? user?.email?.split('@').first ?? 'EdgeSite User';
-    final initials = displayName.isNotEmpty ? displayName.substring(0, displayName.contains(' ') ? 2 : 1).toUpperCase() : 'US';
+    final displayName =
+        user?.userMetadata?['display_name'] as String? ??
+        user?.email?.split('@').first ??
+        'EdgeSite User';
+    final initials = displayName.isNotEmpty
+        ? displayName
+              .substring(0, displayName.contains(' ') ? 2 : 1)
+              .toUpperCase()
+        : 'US';
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
       body: FadeTransition(

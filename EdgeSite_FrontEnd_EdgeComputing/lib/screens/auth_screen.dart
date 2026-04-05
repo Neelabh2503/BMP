@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
@@ -6,8 +9,6 @@ import '../widgets/animated_logo.dart';
 import '../widgets/glowing_button.dart';
 import '../widgets/neon_text_field.dart';
 import 'home_screen.dart';
-import 'dart:async';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -59,13 +60,15 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     ).animate(CurvedAnimation(parent: _formController, curve: Curves.easeOut));
     _formSlide = Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero)
         .animate(
-      CurvedAnimation(parent: _formController, curve: Curves.easeOutCubic),
-    );
+          CurvedAnimation(parent: _formController, curve: Curves.easeOutCubic),
+        );
     _bgPulse = Tween<double>(begin: 0.0, end: 1.0).animate(_bgController);
 
     _formController.forward();
     _tabController.addListener(_onTabChanged);
-    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((
+      data,
+    ) {
       final AuthChangeEvent event = data.event;
       if (event == AuthChangeEvent.passwordRecovery) {
         Future.delayed(Duration.zero, () {
@@ -83,8 +86,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
   }
 
   void _showForgotPasswordDialog() {
-    // Pre-fill the email if they already typed it in the sign-in box
-    final resetEmailController = TextEditingController(text: _emailController.text);
+    final resetEmailController = TextEditingController(
+      text: _emailController.text,
+    );
 
     showDialog(
       context: context,
@@ -92,8 +96,11 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         backgroundColor: AppTheme.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
-            'Reset Password',
-            style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)
+          'Reset Password',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -115,20 +122,25 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppTheme.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () async {
               final email = resetEmailController.text.trim();
               if (email.isNotEmpty && email.contains('@')) {
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
 
                 final success = await _authService.resetPassword(email);
 
                 if (success && mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Password reset link sent! Check your email.'),
+                      content: Text(
+                        'Password reset link sent! Check your email.',
+                      ),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -137,7 +149,13 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                 }
               }
             },
-            child: const Text('Send Link', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Send Link',
+              style: TextStyle(
+                color: AppTheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -195,11 +213,11 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           return SlideTransition(
             position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
                 .animate(
-              CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              ),
-            ),
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
             child: FadeTransition(opacity: animation, child: child),
           );
         },
@@ -376,7 +394,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               prefixIcon: Icons.alternate_email_rounded,
               keyboardType: TextInputType.emailAddress,
               validator: (v) =>
-              v == null || !v.contains('@') ? 'Enter a valid email' : null,
+                  v == null || !v.contains('@') ? 'Enter a valid email' : null,
             ),
             const SizedBox(height: 16),
             NeonTextField(
@@ -397,7 +415,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                     setState(() => _passwordVisible = !_passwordVisible),
               ),
               validator: (v) =>
-              v == null || v.length < 6 ? 'Minimum 6 characters' : null,
+                  v == null || v.length < 6 ? 'Minimum 6 characters' : null,
             ),
             Align(
               alignment: Alignment.centerRight,
@@ -437,7 +455,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               hint: 'Edge site',
               prefixIcon: Icons.person_outline_rounded,
               validator: (v) =>
-              v == null || v.isEmpty ? 'Name is required' : null,
+                  v == null || v.isEmpty ? 'Name is required' : null,
             ),
             const SizedBox(height: 14),
             NeonTextField(
@@ -447,7 +465,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               prefixIcon: Icons.alternate_email_rounded,
               keyboardType: TextInputType.emailAddress,
               validator: (v) =>
-              v == null || !v.contains('@') ? 'Enter a valid email' : null,
+                  v == null || !v.contains('@') ? 'Enter a valid email' : null,
             ),
             const SizedBox(height: 14),
             NeonTextField(
@@ -465,11 +483,11 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                   size: 20,
                 ),
                 onPressed: () => setState(
-                      () => _signUpPasswordVisible = !_signUpPasswordVisible,
+                  () => _signUpPasswordVisible = !_signUpPasswordVisible,
                 ),
               ),
               validator: (v) =>
-              v == null || v.length < 6 ? 'Minimum 6 characters' : null,
+                  v == null || v.length < 6 ? 'Minimum 6 characters' : null,
             ),
             const SizedBox(height: 14),
             NeonTextField(
@@ -509,12 +527,13 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       ],
     );
   }
+
   void _showUpdatePasswordDialog() {
     final newPasswordController = TextEditingController();
 
     showDialog(
       context: context,
-      barrierDismissible: false, // Force them to change it
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -547,9 +566,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                 final success = await _authService.updatePassword(password);
 
                 if (success && mounted) {
-                  Navigator.pop(context); // Close the dialog
-
-                  // SUCCESS! Route them to the Home Screen
+                  Navigator.pop(context);
                   _navigateToHome();
 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -565,7 +582,13 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                 _showError('Password must be at least 6 characters.');
               }
             },
-            child: const Text('Save Password', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Save Password',
+              style: TextStyle(
+                color: AppTheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 package com.edgesite.yolov8tflite
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Matrix
@@ -35,6 +36,11 @@ class LiveDetectionActivity : AppCompatActivity(), Detector.DetectorListener {
 
     private lateinit var cameraExecutor: ExecutorService
 
+    private val sessionStartTime = System.currentTimeMillis()
+    private val detectionLog     = ArrayList<String>(512)
+    private var frameCount       = 0
+    private val MAX_LOG_ENTRIES  = 1_000
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -56,6 +62,7 @@ class LiveDetectionActivity : AppCompatActivity(), Detector.DetectorListener {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
     }
+
     private fun closeAndGoBack() {
         imageAnalyzer?.clearAnalyzer()
         cameraProvider?.unbindAll()
@@ -63,9 +70,20 @@ class LiveDetectionActivity : AppCompatActivity(), Detector.DetectorListener {
             detector?.close()
             detector = null
         }
+
+        if (detectionLog.isNotEmpty()) {
+            val intent = Intent(this, DetectionSummaryActivity::class.java).apply {
+                putExtra(DetectionSummaryActivity.EXTRA_SESSION_START,    sessionStartTime)
+                putExtra(DetectionSummaryActivity.EXTRA_SESSION_END,      System.currentTimeMillis())
+                putExtra(DetectionSummaryActivity.EXTRA_TOTAL_FRAMES,     frameCount)
+                putExtra(DetectionSummaryActivity.EXTRA_SOURCE,           "Live Camera")
+                putStringArrayListExtra(DetectionSummaryActivity.EXTRA_DETECTION_EVENTS, detectionLog)
+            }
+            startActivity(intent)
+        }
+
         finish()
     }
-
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
@@ -139,7 +157,6 @@ class LiveDetectionActivity : AppCompatActivity(), Detector.DetectorListener {
             Log.e(TAG, "Use case binding failed", exc)
         }
     }
-
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
@@ -155,6 +172,7 @@ class LiveDetectionActivity : AppCompatActivity(), Detector.DetectorListener {
         if (allPermissionsGranted()) startCamera()
         else requestPermissionLauncher.launch(REQUIRED_PERMISSIONS)
     }
+
     override fun onPause() {
         super.onPause()
         cameraProvider?.unbindAll()
@@ -166,15 +184,24 @@ class LiveDetectionActivity : AppCompatActivity(), Detector.DetectorListener {
         cameraExecutor.execute { detector?.close() }
         cameraExecutor.shutdown()
     }
+
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         closeAndGoBack()
     }
+
     override fun onEmptyDetect() {
         runOnUiThread { binding.overlay.clear() }
     }
 
     override fun onDetect(boundingBoxes: List<BoundingBox>, inferenceTime: Long) {
+        frameCount++
+        if (detectionLog.size < MAX_LOG_ENTRIES) {
+            val ts = System.currentTimeMillis()
+            boundingBoxes.forEach { box ->
+                detectionLog.add("$ts|${box.clsName}|${box.cnf}")
+            }
+        }
         runOnUiThread {
             binding.inferenceTime.text = "${inferenceTime}ms"
             binding.overlay.apply {
@@ -192,3 +219,4 @@ class LiveDetectionActivity : AppCompatActivity(), Detector.DetectorListener {
         ).toTypedArray()
     }
 }
+

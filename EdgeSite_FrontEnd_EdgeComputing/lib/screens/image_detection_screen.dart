@@ -77,9 +77,7 @@ class _ImageDetectionScreenState extends State<ImageDetectionScreen>
 
     try {
       await _channel.invokeMethod('detectImage');
-    } catch (_) {
-      // Demo mode — simulate processing
-    }
+    } catch (_) {}
 
     await Future.delayed(const Duration(seconds: 2));
     _processingController.stop();
@@ -165,86 +163,11 @@ class _ImageDetectionScreenState extends State<ImageDetectionScreen>
               ),
 
               const SizedBox(height: 20),
-
-              // Image drop zone
-              // Expanded(
-              //   child: Padding(
-              //     padding: const EdgeInsets.symmetric(horizontal: 20),
-              //     child: Stack(
-              //       children: [
-              //         AnimatedContainer(
-              //           duration: const Duration(milliseconds: 300),
-              //           decoration: BoxDecoration(
-              //             color: AppTheme.bgCard,
-              //             borderRadius: BorderRadius.circular(24),
-              //             border: Border.all(
-              //               color: _hasResult
-              //                   ? AppTheme.primary.withOpacity(0.3)
-              //                   : AppTheme.bgElevated,
-              //               width: _hasResult ? 1.5 : 1,
-              //             ),
-              //           ),
-              //         ),
-              //         if (_isProcessing)
-              //           Container(
-              //             decoration: BoxDecoration(
-              //               color: AppTheme.bgDeep.withOpacity(0.85),
-              //               borderRadius: BorderRadius.circular(24),
-              //             ),
-              //             child: Center(
-              //               child: Column(
-              //                 mainAxisSize: MainAxisSize.min,
-              //                 children: [
-              //                   RotationTransition(
-              //                     turns: _processingRotation,
-              //                     child: Container(
-              //                       width: 60,
-              //                       height: 60,
-              //                       decoration: BoxDecoration(
-              //                         shape: BoxShape.circle,
-              //                         border: Border.all(
-              //                           color: AppTheme.primary,
-              //                           width: 3,
-              //                         ),
-              //                       ),
-              //                       child: const Icon(
-              //                         Icons.track_changes_rounded,
-              //                         color: AppTheme.primary,
-              //                         size: 30,
-              //                       ),
-              //                     ),
-              //                   ),
-              //                   const SizedBox(height: 20),
-              //                   const Text(
-              //                     'Analyzing Image...',
-              //                     style: TextStyle(
-              //                       color: AppTheme.textPrimary,
-              //                       fontWeight: FontWeight.w700,
-              //                       fontSize: 16,
-              //                     ),
-              //                   ),
-              //                   const SizedBox(height: 6),
-              //                   const Text(
-              //                     'Running YOLOv8 inference',
-              //                     style: TextStyle(
-              //                       color: AppTheme.textMuted,
-              //                       fontSize: 13,
-              //                     ),
-              //                   ),
-              //                 ],
-              //               ),
-              //             ),
-              //           ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
                 child: Column(
                   children: [
                     if (!_hasResult) ...[
-                      // Source buttons
                       Row(
                         children: [
                           Expanded(

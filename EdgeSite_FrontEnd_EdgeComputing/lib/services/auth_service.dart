@@ -11,7 +11,6 @@ class AuthService extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
-  // Listen to Supabase's current user
   User? get currentUser => _supabase.auth.currentUser;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _supabase.auth.currentSession != null;
@@ -23,10 +22,7 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
+      await _supabase.auth.signInWithPassword(email: email, password: password);
       _isLoading = false;
       notifyListeners();
       return true;
@@ -52,11 +48,7 @@ class AuthService extends ChangeNotifier {
       await _supabase.auth.signUp(
         email: email,
         password: password,
-        data: {
-          'display_name': name,
-          'role': 'Edge Analyst', // Porting over your role logic
-        },
-        // Tell Supabase to bounce back to the app after email confirmation
+        data: {'display_name': name, 'role': 'Edge Analyst'},
         emailRedirectTo: 'io.supabase.edgesite://login-callback/',
       );
       _isLoading = false;
@@ -79,6 +71,7 @@ class AuthService extends ChangeNotifier {
     await _supabase.auth.signOut();
     notifyListeners();
   }
+
   Future<bool> resetPassword(String email) async {
     _isLoading = true;
     _errorMessage = null;
@@ -87,7 +80,7 @@ class AuthService extends ChangeNotifier {
     try {
       await _supabase.auth.resetPasswordForEmail(
         email,
-        redirectTo: 'io.supabase.edgesite://login-callback/', // Uses your deep link
+        redirectTo: 'io.supabase.edgesite://login-callback/',
       );
       _isLoading = false;
       notifyListeners();
@@ -104,16 +97,14 @@ class AuthService extends ChangeNotifier {
       return false;
     }
   }
+
   Future<bool> updatePassword(String newPassword) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      // This updates the currently logged-in user's password
-      await _supabase.auth.updateUser(
-        UserAttributes(password: newPassword),
-      );
+      await _supabase.auth.updateUser(UserAttributes(password: newPassword));
       _isLoading = false;
       notifyListeners();
       return true;
@@ -129,6 +120,7 @@ class AuthService extends ChangeNotifier {
       return false;
     }
   }
+
   void clearError() {
     _errorMessage = null;
     notifyListeners();

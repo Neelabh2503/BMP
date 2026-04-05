@@ -6,11 +6,13 @@ import '../theme/app_theme.dart';
 class DashboardScreen extends StatefulWidget {
   final VoidCallback onLiveTap;
   final VoidCallback onImageTap;
+  final VoidCallback onProfileTap;
 
   const DashboardScreen({
     super.key,
     required this.onLiveTap,
     required this.onImageTap,
+    required this.onProfileTap,
   });
 
   @override
@@ -50,8 +52,15 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget build(BuildContext context) {
     final user = _authService.currentUser;
     final hour = DateTime.now().hour;
-    final displayName = user?.userMetadata?['display_name'] as String? ?? user?.email?.split('@').first ?? 'User';
-    final initials = displayName.isNotEmpty ? displayName.substring(0, displayName.contains(' ') ? 2 : 1).toUpperCase() : 'US';
+    final displayName =
+        user?.userMetadata?['display_name'] as String? ??
+        user?.email?.split('@').first ??
+        'User';
+    final initials = displayName.isNotEmpty
+        ? displayName
+              .substring(0, displayName.contains(' ') ? 2 : 1)
+              .toUpperCase()
+        : 'US';
     final greeting = hour < 12
         ? 'Good Morning'
         : hour < 18
@@ -89,7 +98,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ],
                     ),
                   ),
-                  _AvatarWidget(initials: initials),
+                  GestureDetector(
+                    onTap: widget.onProfileTap,
+                    child: _AvatarWidget(initials: initials),
+                  ),
                 ],
               ),
             ),

@@ -51,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       DashboardScreen(
         onLiveTap: () => _onTabTapped(1),
         onImageTap: () => _onTabTapped(2),
+        onProfileTap: () => _onTabTapped(3),
       ),
       const LiveDetectionScreen(),
       const ImageDetectionScreen(),

@@ -6,6 +6,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import com.edgesite.yolov8tflite.LiveDetectionActivity
 import com.edgesite.yolov8tflite.ImageDetectionActivity
+import com.edgesite.yolov8tflite.ExternalCameraLiveDetection
 
 class MainActivity: FlutterActivity() {
 
@@ -27,6 +28,12 @@ class MainActivity: FlutterActivity() {
 
                     "detectImage" -> {
                         val intent = Intent(this, ImageDetectionActivity::class.java)
+                        startActivity(intent)
+                        result.success(null)
+                    }
+
+                    "startESPDetection" -> {
+                        val intent = Intent(this, ExternalCameraLiveDetection::class.java)
                         startActivity(intent)
                         result.success(null)
                     }
