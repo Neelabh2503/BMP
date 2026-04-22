@@ -9,9 +9,9 @@ import 'theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
-    url: 'url Placeholder',
+    url: 'https://smfilbttxlutjatkvyjm.supabase.co',
     anonKey:
-        'key PlaceHolder',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZmlsYnR0eGx1dGphdGt2eWptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NzY1MTAsImV4cCI6MjA5MDU1MjUxMH0.NaZtUdD0RFZ_-Fm3UKZEpgAFLzqUaHnrfk-TC854CRE',
   );
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

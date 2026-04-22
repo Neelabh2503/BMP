@@ -1,52 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- item_timeline_entry.xml  – one row in the Detection Timeline card -->
+<!-- item_timeline_entry.xml  – one span row in the Detection Timeline card -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:paddingTop="9dp"
-    android:paddingBottom="9dp">
+    android:orientation="vertical"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
 
-    <!-- Timestamp -->
+    <!-- Row 1: label (left)  +  confidence (right) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="3dp">
+
+        <!-- Colour dot -->
+        <View
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:background="#2196F3"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Object label -->
+        <TextView
+            android:id="@+id/tvTimelineLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#DDDDDD"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="person" />
+
+        <!-- Peak confidence -->
+        <TextView
+            android:id="@+id/tvTimelineConf"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#4CAF50"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            tools:text="92%" />
+
+    </LinearLayout>
+
+    <!-- Row 2: time range  "14:22:09 → 14:22:53  (44s)" -->
     <TextView
         android:id="@+id/tvTimelineTime"
-        android:layout_width="72dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingStart="14dp"
         android:textColor="#66FFFFFF"
-        android:textSize="12sp"
+        android:textSize="11sp"
         android:fontFamily="monospace"
-        tools:text="14:22:09" />
-
-    <!-- Dot separator -->
-    <View
-        android:layout_width="4dp"
-        android:layout_height="4dp"
-        android:background="#444444"
-        android:layout_marginEnd="10dp"
-        android:layout_marginStart="2dp" />
-
-    <!-- Object label -->
-    <TextView
-        android:id="@+id/tvTimelineLabel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textColor="#DDDDDD"
-        android:textSize="14sp"
-        tools:text="person" />
-
-    <!-- Confidence -->
-    <TextView
-        android:id="@+id/tvTimelineConf"
-        android:layout_width="40dp"
-        android:layout_height="wrap_content"
-        android:textColor="#4CAF50"
-        android:textSize="12sp"
-        android:fontFamily="monospace"
-        android:gravity="end"
-        tools:text="92%" />
+        tools:text="14:22:09 → 14:22:53  (44s)" />
 
 </LinearLayout>
