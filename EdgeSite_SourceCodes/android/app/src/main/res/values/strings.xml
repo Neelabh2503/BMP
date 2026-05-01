@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EdgeSite Rescue</string>
+    <string name="gpu">GPU</string>
+
+    <string name="connect_to_channel">Connect to Channel</string>
+
+    <string name="hide_controls">Hide Controls</string>
+    <string name="show_controls">Show Controls</string>
+
+    <string name="btn_back">Back</string>
+    <string name="btn_start">Start</string>
+    <string name="btn_stop">Stop</string>
+</resources>

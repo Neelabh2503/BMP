@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="false"
+    android:background="@android:color/black">
+
+    <FrameLayout
+        android:id="@+id/mapFragmentContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/mapTopBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#CC000000"
+        android:paddingStart="4dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"
+        android:elevation="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnMapBack"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            android:tint="@color/white"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:text="Rescue Map"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/cardTarget"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#DD1A0000"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:elevation="8dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/mapBottomBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:visibility="visible">
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="#FF3333"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/tvMapTargetInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#FF6666"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="🔴 Target #1 · person · 92%" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/mapBottomBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#CC000000"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:elevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        <TextView
+            android:id="@+id/tvMapStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#00FF88"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="✓ 3 target(s) · 1 detour(s)" />
+
+        <TextView
+            android:id="@+id/tvMapLegend"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="#AAFFFFFF"
+            android:textSize="10sp"
+            tools:text="🟢 Start   🔴 Unsafe(2)   🟩 Safe(1)   📍 Target(3)   🚁 Drone(47 pts)" />
+
+        <TextView
+            android:id="@+id/tvMapHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Tap a 📍 pin to isolate its path · Tap map to show all"
+            android:textColor="#66FFFFFF"
+            android:textSize="10sp"
+            android:fontFamily="sans-serif-light" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

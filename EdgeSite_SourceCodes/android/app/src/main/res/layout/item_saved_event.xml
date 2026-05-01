@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginTop="8dp"
+    app:cardBackgroundColor="@color/neu_card_dark"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="14dp"
+        android:gravity="center_vertical">
+
+        <View
+            android:id="@+id/viewEventStripe"
+            android:layout_width="4dp"
+            android:layout_height="52dp"
+            android:layout_marginEnd="12dp"
+            android:background="@color/primary_dark" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvEventObject"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="🔴 Person"
+                tools:textColor="#FF0000" />
+
+            <TextView
+                android:id="@+id/tvEventTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:textColor="@color/text_secondary_dark"
+                android:textSize="12sp"
+                tools:text="26 Apr 2026, 14:32:01" />
+
+            <TextView
+                android:id="@+id/tvEventConfidence"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/text_secondary_dark"
+                android:textSize="12sp"
+                tools:text="Confidence: 82%" />
+
+            <TextView
+                android:id="@+id/tvEventLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="#66AAAAAA"
+                android:textSize="11sp"
+                android:fontFamily="monospace"
+                tools:text="23.02255, 72.57145" />
+
+        </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="›"
+            android:textColor="@color/text_secondary_dark"
+            android:textSize="24sp"
+            android:paddingStart="8dp" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

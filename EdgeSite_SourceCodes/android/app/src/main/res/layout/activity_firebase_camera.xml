@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cloud_camera_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="false"
+    android:background="@android:color/black">
+
+    <ImageView
+        android:id="@+id/cloudPreviewView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        android:background="#111111"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.edgesite.yolov8tflite.OverlayView
+        android:id="@+id/cloudOverlayView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:elevation="2dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/cloudTopBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#D0000000"
+        android:paddingStart="4dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="10dp"
+        android:elevation="10dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnCloudBack"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            android:tint="@color/white"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Connect to Channel"
+            android:textColor="@color/white"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnToggleControls"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Hide Controls"
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:background="#33FFFFFF"
+            android:contentDescription="Toggle Controls" />
+
+        <TextView
+            android:id="@+id/tvCloudInference"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textColor="#99FFFFFF"
+            android:textSize="11sp"
+            android:fontFamily="monospace"
+            tools:text="12ms" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/sidePanel"
+        android:layout_width="60dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:background="#BB000000"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="3dp"
+        android:paddingEnd="3dp"
+        android:gravity="top|center_horizontal"
+        android:elevation="10dp"
+        app:layout_constraintTop_toBottomOf="@id/cloudTopBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/cloudBottomBar">
+
+        <Button
+            android:id="@+id/btnMarkTarget"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginBottom="8dp"
+            android:text="⛳"
+            android:textSize="22sp"
+            android:background="@drawable/btn_side_target"
+            android:contentDescription="Mark Target"
+            android:padding="0dp" />
+
+        <Button
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:id="@+id/btnMarkUnsafe"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginBottom="8dp"
+            android:text="⚠️"
+            android:textSize="22sp"
+            android:background="@drawable/btn_side_unsafe"
+            android:contentDescription="Mark Unsafe Zone"
+            android:padding="0dp" />
+
+        <Button
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:id="@+id/btnMarkSafe"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginBottom="8dp"
+            android:text="🟢"
+            android:textSize="22sp"
+            android:background="@drawable/btn_side_safe"
+            android:contentDescription="Mark Safe Zone"
+            android:padding="0dp" />
+
+        <Button
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:id="@+id/btnViewMap"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:text="🗺"
+            android:textSize="22sp"
+            android:background="@drawable/btn_side_map"
+            android:contentDescription="View Map"
+            android:padding="0dp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvTarget"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="—"
+        android:textColor="#FF4444"
+        android:textSize="11sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:background="#99000000"
+        android:elevation="8dp"
+        app:layout_constraintBottom_toTopOf="@id/tvGps"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/sidePanel"
+        tools:text="🔒 person LOCKED" />
+
+    <TextView
+        android:id="@+id/tvGps"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="GPS: waiting…"
+        android:textColor="#00FF88"
+        android:textSize="11sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:background="#99000000"
+        android:fontFamily="monospace"
+        android:elevation="8dp"
+        app:layout_constraintBottom_toTopOf="@id/cloudBottomBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/sidePanel"
+        tools:text="23.02255, 72.57145" />
+
+    <LinearLayout
+        android:id="@+id/cloudBottomBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#EE000000"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/etCameraId"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:background="#44FFFFFF"
+                android:hint="Camera ID"
+                android:textColor="@color/white"
+                android:textColorHint="#77FFFFFF"
+                android:textSize="13sp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:singleLine="true"
+                android:inputType="text" />
+
+            <EditText
+                android:id="@+id/etChannelPassword"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_marginTop="6dp"
+                android:background="#44FFFFFF"
+                android:hint="Channel Password"
+                android:textColor="@color/white"
+                android:textColorHint="#77FFFFFF"
+                android:textSize="13sp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:singleLine="true"
+                android:inputType="textPassword" />
+
+            <TextView
+                android:id="@+id/tvCloudStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:textColor="#99FFFFFF"
+                android:textSize="10sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Idle…" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginStart="10dp"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/btnStartCloud"
+                android:layout_width="56dp"
+                android:layout_height="50dp"
+                android:text="▶"
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:backgroundTint="#4CAF50"
+                android:padding="0dp"
+                android:contentDescription="Start" />
+
+            <Button
+                android:id="@+id/btnStopCloud"
+                android:layout_width="56dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="8dp"
+                android:text="■"
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:backgroundTint="#F44336"
+                android:enabled="false"
+                android:alpha="0.5"
+                android:padding="0dp"
+                android:contentDescription="Stop" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
