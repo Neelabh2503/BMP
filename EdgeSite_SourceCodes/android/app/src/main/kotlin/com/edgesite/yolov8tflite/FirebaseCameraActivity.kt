@@ -6,8 +6,6 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.*
@@ -25,6 +23,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -42,7 +41,7 @@ class FirebaseCameraActivity : AppCompatActivity(), Detector.DetectorListener {
     private lateinit var btnMarkUnsafe    : Button
     private lateinit var btnMarkSafe      : Button
     private lateinit var btnViewMap       : Button
-    private lateinit var btnToggleControls: Button       
+    private lateinit var btnToggleControls: Button
     private lateinit var previewView      : android.widget.ImageView
     private lateinit var overlayView      : OverlayView
     private lateinit var tvStatus         : TextView
@@ -69,9 +68,11 @@ class FirebaseCameraActivity : AppCompatActivity(), Detector.DetectorListener {
     }
     @Volatile private var sessionStartLocation: GpsBreadcrumb? = null
     @Volatile private var latestBox: BoundingBox? = null
+    private var firestoreListener  : ListenerRegistration? = null
+    private var isStreaming        = false
 
-    private val pollHandler  = Handler(Looper.getMainLooper())
-    private var isPolling    = false
+    @Volatile private var isProcessingFrame = false
+
     private var currentCamId = ""
     private var lastUrl      : String? = null
     private val firestore by lazy { FirebaseFirestore.getInstance() }
@@ -108,6 +109,7 @@ class FirebaseCameraActivity : AppCompatActivity(), Detector.DetectorListener {
     companion object {
         private const val TAG = "FirebaseCamera"
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -124,7 +126,7 @@ class FirebaseCameraActivity : AppCompatActivity(), Detector.DetectorListener {
     override fun onDestroy() {
         super.onDestroy()
         cancellationTokenSource.cancel()
-        stopPolling()
+        stopStreaming()
         detector?.close()
         executor.shutdown()
         MapActivity.breadcrumbManager = null
@@ -237,7 +239,7 @@ class FirebaseCameraActivity : AppCompatActivity(), Detector.DetectorListener {
             )
         }
 
-        btnStop.setOnClickListener { stopPolling() }
+        btnStop.setOnClickListener { stopStreaming() }
         btnMarkTarget.setOnClickListener { saveTarget() }
         btnMarkUnsafe.setOnClickListener { saveZone(isUnsafe = true) }
         btnMarkSafe.setOnClickListener   { saveZone(isUnsafe = false) }
@@ -330,9 +332,8 @@ class FirebaseCameraActivity : AppCompatActivity(), Detector.DetectorListener {
     }
 
     private fun startSessionNow(camId: String) {
-        runOnUiThread { startPolling(camId) }
+        runOnUiThread { startStreaming(camId) }
     }
-
 
     private fun openMap() {
         MapActivity.breadcrumbManager = breadcrumbManager
@@ -348,7 +349,6 @@ class FirebaseCameraActivity : AppCompatActivity(), Detector.DetectorListener {
         MapActivity.currentSessionId = currentSessionId
         startActivity(Intent(this, MapActivity::class.java))
     }
-
 
     private fun saveTarget() {
         val crumb = currentCrumb() ?: return
@@ -458,30 +458,110 @@ class FirebaseCameraActivity : AppCompatActivity(), Detector.DetectorListener {
         }
     }
 
-    private fun startPolling(camId: String) {
-        isPolling = true; currentCamId = camId; lastUrl = null
+    private fun startStreaming(camId: String) {
+        isStreaming    = true
+        currentCamId   = camId
+        lastUrl        = null
+        isProcessingFrame = false
         sessionTargetCount = 0
-        btnStart.isEnabled = false; btnStop.isEnabled = true
+
+        btnStart.isEnabled = false
+        btnStop.isEnabled  = true
         etCameraId.isEnabled = false
         etPassword.isEnabled = false
         tvStatus.text = "Connecting…"
 
         val sessionStart = startTime
         currentSessionId = SessionRecord.buildId(camId, sessionStart)
-        val record = SessionRecord(
-            sessionId  = currentSessionId,
-            cameraId   = camId,
-            startTime  = sessionStart,
-            endTime    = 0L,
-            targetsDetected = 0
+        SessionRepository.create(
+            SessionRecord(
+                sessionId       = currentSessionId,
+                cameraId        = camId,
+                startTime       = sessionStart,
+                endTime         = 0L,
+                targetsDetected = 0
+            )
         )
-        SessionRepository.create(record)
-        schedulePoll()
+
+        firestoreListener = firestore
+            .collection(CloudConfig.FIRESTORE_COLLECTION)
+            .whereEqualTo("camera_id", camId)
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .limit(1)
+            .addSnapshotListener { snapshot, error ->
+
+                if (!isStreaming) return@addSnapshotListener
+
+                if (error != null) {
+                    Log.e(TAG, "Listener error: ${error.message}")
+                    runOnUiThread { tvStatus.text = "Stream error — retrying…" }
+                    return@addSnapshotListener
+                }
+
+                if (snapshot == null || snapshot.isEmpty) {
+                    runOnUiThread { tvStatus.text = "Waiting for first frame…" }
+                    return@addSnapshotListener
+                }
+
+                val doc = snapshot.documents[0]
+                val url = doc.getString("image_url") ?: return@addSnapshotListener
+
+                breadcrumbManager.ingest(
+                    GpsBreadcrumb(
+                        timestamp = doc.getLong("client_ts") ?: System.currentTimeMillis(),
+                        lat       = doc.getDouble("lat")      ?: 0.0,
+                        lon       = doc.getDouble("lon")      ?: 0.0,
+                        altitude  = doc.getDouble("altitude") ?: 0.0,
+                        accuracy  = (doc.getDouble("accuracy") ?: 50.0).toFloat()
+                    )
+                )
+
+                if (url == lastUrl) return@addSnapshotListener
+                lastUrl = url
+
+                if (isProcessingFrame) {
+                    Log.d(TAG, "Frame skipped — YOLO still running")
+                    return@addSnapshotListener
+                }
+
+                isProcessingFrame = true
+                frameCount++
+
+                executor.execute {
+                    val bmp = downloadBitmap(url)
+                    if (bmp == null) {
+                        runOnUiThread { tvStatus.text = "Download failed" }
+                        isProcessingFrame = false
+                        return@execute
+                    }
+
+                    runOnUiThread { previewView.setImageBitmap(bmp) }
+
+                    try {
+                        detector?.detect(
+                            Bitmap.createScaledBitmap(
+                                bmp,
+                                CloudConfig.MODEL_INPUT_SIZE,
+                                CloudConfig.MODEL_INPUT_SIZE,
+                                false
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Log.e(TAG, "detect: ${e.message}")
+                    } finally {
+
+                        isProcessingFrame = false
+                    }
+                }
+            }
     }
 
-    private fun stopPolling() {
-        isPolling = false
-        pollHandler.removeCallbacksAndMessages(null)
+    private fun stopStreaming() {
+        isStreaming = false
+        firestoreListener?.remove()
+        firestoreListener = null
+        isProcessingFrame = false
+
         if (currentSessionId.isNotEmpty()) {
             SessionRepository.close(
                 sessionId       = currentSessionId,
@@ -489,53 +569,14 @@ class FirebaseCameraActivity : AppCompatActivity(), Detector.DetectorListener {
                 targetsDetected = sessionTargetCount
             )
         }
+
         runOnUiThread {
-            btnStart.isEnabled = true; btnStop.isEnabled = false
+            btnStart.isEnabled   = true
+            btnStop.isEnabled    = false
             etCameraId.isEnabled = true
             etPassword.isEnabled = true
-            tvStatus.text = "Stopped"
+            tvStatus.text        = "Stopped"
         }
-    }
-
-    private fun schedulePoll() {
-        if (!isPolling) return
-        pollHandler.postDelayed({ fetchFrame() }, CloudConfig.POLL_INTERVAL_MS)
-    }
-
-    private fun fetchFrame() {
-        if (!isPolling) return
-        firestore.collection(CloudConfig.FIRESTORE_COLLECTION)
-            .whereEqualTo("camera_id", currentCamId)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .limit(1).get()
-            .addOnSuccessListener { snapshot ->
-                if (snapshot.isEmpty) { tvStatus.text = "Waiting…"; schedulePoll(); return@addOnSuccessListener }
-                val doc = snapshot.documents[0]
-                val url = doc.getString("image_url") ?: run { schedulePoll(); return@addOnSuccessListener }
-                breadcrumbManager.ingest(GpsBreadcrumb(
-                    timestamp = doc.getLong("client_ts") ?: System.currentTimeMillis(),
-                    lat       = doc.getDouble("lat")     ?: 0.0,
-                    lon       = doc.getDouble("lon")     ?: 0.0,
-                    altitude  = doc.getDouble("altitude") ?: 0.0,
-                    accuracy  = (doc.getDouble("accuracy") ?: 50.0).toFloat()
-                ))
-                if (url == lastUrl) { schedulePoll(); return@addOnSuccessListener }
-                lastUrl = url; frameCount++
-                executor.execute {
-                    val bmp = downloadBitmap(url) ?: run {
-                        runOnUiThread { tvStatus.text = "Download failed" }
-                        schedulePoll(); return@execute
-                    }
-                    runOnUiThread { previewView.setImageBitmap(bmp) }
-                    try {
-                        detector?.detect(Bitmap.createScaledBitmap(bmp, CloudConfig.MODEL_INPUT_SIZE, CloudConfig.MODEL_INPUT_SIZE, false))
-                    } catch (e: Exception) { Log.e(TAG, "detect: ${e.message}") }
-                    runOnUiThread { schedulePoll() }
-                }
-            }
-            .addOnFailureListener { e ->
-                tvStatus.text = "Error: ${e.message}"; schedulePoll()
-            }
     }
 
     override fun onDetect(boxes: List<BoundingBox>, time: Long) {
@@ -546,7 +587,8 @@ class FirebaseCameraActivity : AppCompatActivity(), Detector.DetectorListener {
         objectTracker.update(boxes, frameCount.toLong(), ts)
         runOnUiThread {
             tvInference.text = "${time}ms"
-            overlayView.setResults(boxes); overlayView.invalidate()
+            overlayView.setResults(boxes)
+            overlayView.invalidate()
             tvStatus.text = "✔ $currentCamId"
         }
     }
@@ -555,20 +597,30 @@ class FirebaseCameraActivity : AppCompatActivity(), Detector.DetectorListener {
         objectTracker.update(emptyList(), frameCount.toLong(), System.currentTimeMillis())
         runOnUiThread { overlayView.clear(); tvStatus.text = "✔ $currentCamId (idle)" }
     }
+    
 
     private fun downloadBitmap(url: String): Bitmap? {
-        var conn: HttpURLConnection? = null; var stream: InputStream? = null
+        var conn: HttpURLConnection? = null
+        var stream: InputStream? = null
         return try {
             conn = URL(url).openConnection() as HttpURLConnection
-            conn.connectTimeout = 8_000; conn.readTimeout = 8_000; conn.connect()
+            conn.connectTimeout = 8_000
+            conn.readTimeout    = 8_000
+            conn.connect()
             if (conn.responseCode != HttpURLConnection.HTTP_OK) return null
-            stream = conn.inputStream; BitmapFactory.decodeStream(stream)
-        } catch (e: Exception) { Log.e(TAG, "dl: ${e.message}"); null }
-        finally { stream?.close(); conn?.disconnect() }
+            stream = conn.inputStream
+            BitmapFactory.decodeStream(stream)
+        } catch (e: Exception) {
+            Log.e(TAG, "dl: ${e.message}")
+            null
+        } finally {
+            stream?.close()
+            conn?.disconnect()
+        }
     }
 
     private fun handleBack() {
-        stopPolling()
+        stopStreaming()
         if (detectionLog.isNotEmpty()) {
             startActivity(Intent(this, DetectionSummaryActivity::class.java).apply {
                 putExtra(DetectionSummaryActivity.EXTRA_SESSION_START, startTime)
